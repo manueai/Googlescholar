@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Scholar Metrics</title>
+</head>
+<body>
+  <h1>Google Scholar Metrics</h1>
+  <div id="scholar-stats">Loading metrics…</div>
+
+  <script>
+    fetch('metrics.json')
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('scholar-stats').innerHTML = `
+          <strong>Citations:</strong> ${data.citations}<br>
+          <strong>h‑index:</strong> ${data.h_index}<br>
+          <strong>i10‑index:</strong> ${data.i10_index}
+        `;
+      })
+      .catch(err => {
+        console.error(err);
+        document.getElementById('scholar-stats').textContent = 'Failed to load metrics.';
+      });
+  </script>
+</body>
+</html>
