@@ -1,0 +1,45 @@
+name: Update Scholar Metrics
+
+on:
+  schedule:
+    - cron: '0 8 * * *'      # Daily at 08:00 UTC
+  workflow_dispatch:        # Also allow manual runs
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install scholarly
+        run: pip install scholarly
+
+      - name: Scrape Scholar metrics
+        run: |
+          python - <<EOF
+          from scholarly import scholarly
+          author = scholarly.search_author_id('x9j7oD4AAAAJ')
+          profile = scholarly.fill(author)
+          metrics = {
+            "citations": profile.get("citedby", 0),
+            "h_index": profile.get("hindex", 0),
+            "i10_index": profile.get("i10index", 0)
+          }
+          import json
+          with open('metrics.json', 'w') as f:
+              json.dump(metrics, f, indent=2)
+          EOF
+
+      - name: Commit & push metrics.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add metrics.json
+          git commit -m "📈 Daily Scholar metrics update" || echo "No changes to commit"
+          git push
